@@ -5,9 +5,9 @@ use olympic
 select * from athlete_events
 select * from noc_regions
 
---Querying for dataset analysis:
+--Queries for dataset analysis:
 
---1. How many Olympics games have been held?
+--1. How many Olympic games have been held?
 select count(distinct Games)
 from olympic.dbo.athlete_events
 
@@ -16,7 +16,7 @@ select distinct Year, Games, Season, City
 from athlete_events
 order by Year
 
---3. Mention the total number of nations who participated in each Olympics game?
+--3. Mention the total number of nations who participated in each Olympic game?
 select Year, Games, count(distinct region) as no_of_country 
 from athlete_events ae
 join noc_regions nr
@@ -132,7 +132,7 @@ group by Name) sq)
 select * from t1
 where rank<= 5
 
---13. Fetch the top 5 most successful countries in Olympics. Success is defined by no of medals won.
+--13. Fetch the top 5 most successful countries in Olympics.(Success is defined by no of medals won).
 with t1(country_rank, region, medal_count)
 as
 (select DENSE_RANK() over(order by medal_count desc) as country_rank, region, medal_count
@@ -156,8 +156,8 @@ order by total_gold_medals desc, total_silver_medals desc, total_bronze_medals d
 
 --15. List down total gold, silver and broze medals won by each country corresponding to each olympic games.
 select distinct Games, region, sum(case when Medal ='Gold' then 1 else 0 end)as total_gold_medals,
-               sum(case when Medal ='Silver' then 1 else 0 end)as total_silver_medals,
-			   sum(case when Medal ='Bronze' then 1 else 0 end)as total_bronze_medals
+                               sum(case when Medal ='Silver' then 1 else 0 end)as total_silver_medals,
+			       sum(case when Medal ='Bronze' then 1 else 0 end)as total_bronze_medals
 from athlete_events ae
 join noc_regions nr on ae.NOC = nr.NOC
 group by Games, region
@@ -167,44 +167,42 @@ order by Games, region
 with t1(Games, region, no_gold, no_silver, no_bronze)
 as
 (select Games, region, sum(case when Medal ='Gold' then 1 else 0 end)as no_gold,
-               sum(case when Medal ='Silver' then 1 else 0 end)as no_silver,
-			   sum(case when Medal ='Bronze' then 1 else 0 end)as no_bronze
+                       sum(case when Medal ='Silver' then 1 else 0 end)as no_silver,
+		       sum(case when Medal ='Bronze' then 1 else 0 end)as no_bronze
 from athlete_events ae
 join noc_regions nr on ae.NOC = nr.NOC
 group by Games, region)
 
 select distinct Games,
 concat ((FIRST_VALUE (region) over (partition by Games order by no_gold desc)), 
-		' - ', FIRST_VALUE (no_gold) over (partition by Games order by no_gold desc)) as Max_gold,
---query uses the window function FIRST_VALUE() to get the first value of 'region' within each partition defined by 'Games', 
---with the rows ordered by 'no_gold' in descending order.
+	' - ', FIRST_VALUE (no_gold) over (partition by Games order by no_gold desc)) as Max_gold,
 concat ((FIRST_VALUE (region) over (partition by Games order by no_silver desc)),
-		' - ', FIRST_VALUE (no_silver) over (partition by Games order by no_silver desc)) as Max_silver,
+	' - ', FIRST_VALUE (no_silver) over (partition by Games order by no_silver desc)) as Max_silver,
 concat ((FIRST_VALUE (region) over (partition by Games order by no_bronze desc)),
-		' - ', FIRST_VALUE (no_bronze) over (partition by Games order by no_bronze desc)) as Max_bronze
+	' - ', FIRST_VALUE (no_bronze) over (partition by Games order by no_bronze desc)) as Max_bronze
 from t1
 order by Games
 
---17. Identify which country won the most gold, most silver, most bronze medals and the most medals in each olympic games.
+--17. Identify which country won the most gold, most silver, most bronze medals and the most medals in each olympic game.
 with t1(Games, region, no_gold, no_silver, no_bronze, total_medals)
 as
 (select Games, region, sum(case when Medal ='Gold' then 1 else 0 end)as no_gold,
-               sum(case when Medal ='Silver' then 1 else 0 end)as no_silver,
-			   sum(case when Medal ='Bronze' then 1 else 0 end)as no_bronze,
-			   sum(case when Medal in ('Gold','Silver','Bronze') then 1 else 0 end) as total_medals
+                       sum(case when Medal ='Silver' then 1 else 0 end)as no_silver,
+		       sum(case when Medal ='Bronze' then 1 else 0 end)as no_bronze,
+		       sum(case when Medal in ('Gold','Silver','Bronze') then 1 else 0 end) as total_medals
 from athlete_events ae
 join noc_regions nr on ae.NOC = nr.NOC
 group by Games, region)
 
 select distinct Games,
 concat ((FIRST_VALUE (region) over (partition by Games order by no_gold desc)), 
-		' - ', FIRST_VALUE (no_gold) over (partition by Games order by no_gold desc)) as Max_gold,
+	' - ', FIRST_VALUE (no_gold) over (partition by Games order by no_gold desc)) as Max_gold,
 concat ((FIRST_VALUE (region) over (partition by Games order by no_silver desc)),
-		' - ', FIRST_VALUE (no_silver) over (partition by Games order by no_silver desc)) as Max_silver,
+	' - ', FIRST_VALUE (no_silver) over (partition by Games order by no_silver desc)) as Max_silver,
 concat ((FIRST_VALUE (region) over (partition by Games order by no_bronze desc)),
-		' - ', FIRST_VALUE (no_bronze) over (partition by Games order by no_bronze desc)) as Max_bronze,
+	' - ', FIRST_VALUE (no_bronze) over (partition by Games order by no_bronze desc)) as Max_bronze,
 concat ((FIRST_VALUE (region) over (partition by Games order by total_medals desc)),
-		' - ', FIRST_VALUE (total_medals) over (partition by Games order by total_medals desc)) as Max_medals
+	' - ', FIRST_VALUE (total_medals) over (partition by Games order by total_medals desc)) as Max_medals
 from t1
 order by Games
 
@@ -212,8 +210,8 @@ order by Games
 with t1(region, no_gold, no_silver, no_bronze)
 as
 (select region, sum(case when Medal ='Gold' then 1 else 0 end)as no_gold,
-               sum(case when Medal ='Silver' then 1 else 0 end)as no_silver,
-			   sum(case when Medal ='Bronze' then 1 else 0 end)as no_bronze
+                sum(case when Medal ='Silver' then 1 else 0 end)as no_silver,
+	        sum(case when Medal ='Bronze' then 1 else 0 end)as no_bronze
 from athlete_events ae
 join noc_regions nr on ae.NOC = nr.NOC
 group by region)
